@@ -33,11 +33,10 @@ let tableAlumnos = new Grid({
     },
     {
       id: "acciones",
-      name: "Acciones",
+      name: "Editar",
       width: "10%",
       sort: false,
       formatter: (cell, row) => {
-        console.log(row);
         return h(
           "button",
           {
@@ -51,6 +50,34 @@ let tableAlumnos = new Grid({
             },
           },
           html('<i class="fa-regular fa-pen-to-square"></i>')
+        );
+      },
+    },
+    {
+      id: "acciones",
+      name: "Eliminar",
+      width: "10%",
+      sort: false,
+      formatter: (cell) => {
+        return h(
+          "button",
+          {
+            className: "btn",
+            onClick: () => {
+              Swal.fire({
+                title: '¿Esta seguro que desea eliminar este alumno?',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  eliminarAlumno(cell);
+                  Swal.fire('Se ha eliminado el alumno!', '', 'Elimanado')
+                }
+              })
+            },
+          },
+          html('<i class="fa-regular fa-trash-can"></i>')
         );
       },
     },
@@ -92,6 +119,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+function eliminarAlumno(id) {
+  let alumnosString = localStorage.getItem("alumnos");
+  let alumnos = JSON.parse(alumnosString);
+  if(alumnos.length == 1){
+    localStorage.removeItem("alumnos")
+    tableAlumnos.updateConfig({ data: [] }).forceRender();
+  }else{
+    alumnos = alumnos.filter((alumno)=> alumno.id !== id);
+    loadTable(alumnos);
+  }
+  localStorage.setItem("alumnos",JSON.stringify(alumnos))
+  console.log(alumnos)
+}
+
 guardarAlumno.addEventListener("click", () => {
   let nombre = document.getElementById("nombre").value;
   let apellido = document.getElementById("apellido").value;
@@ -132,3 +173,4 @@ guardarAlumno.addEventListener("click", () => {
   loadTable(alumnos); //
   modalGuardarAlumno.hide();
 });
+

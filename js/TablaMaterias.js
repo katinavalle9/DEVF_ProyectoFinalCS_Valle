@@ -41,6 +41,34 @@ let tableMaterias = new Grid({
           );
         },
       },
+      {
+        id: "acciones",
+        name: "Eliminar",
+        width: "10%",
+        sort: false,
+        formatter: (cell) => {
+          return h(
+            "button",
+            {
+              className: "btn",
+              onClick: () => {
+                Swal.fire({
+                  title: "¿Esta seguro que desea eliminar esta materia?",
+                  showCancelButton: true,
+                  confirmButtonText: "Eliminar",
+                  cancelButtonText: "Cancelar",
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    eliminarMateria(cell);
+                    Swal.fire("Se ha eliminado la materia!", "", "Elimanado");
+                  }
+                });
+              },
+            },
+            html('<i class="fa-regular fa-trash-can"></i>')
+          );
+        },
+      },
     ],
     data: [],
     search: true,
@@ -76,6 +104,21 @@ document.addEventListener("DOMContentLoaded", function () {
     loadTable(materias);
   }
 });
+
+function eliminarMateria(id) {
+  let materiasString = localStorage.getItem("materias");
+  let materias = JSON.parse(materiasString);
+  if (materias.length == 1) {
+    localStorage.removeItem("materias");
+    tableMaterias.updateConfig({ data: [] }).forceRender();
+  } else {
+    materias = materias.filter((materia) => materia.id !== id);
+    loadTable(materias);
+  }
+  localStorage.setItem("materias", JSON.stringify(materias));
+  console.log(materias);
+}
+
 
 guardarMateria.addEventListener("click", () => {
   let nombre = document.getElementById("nombre").value;
