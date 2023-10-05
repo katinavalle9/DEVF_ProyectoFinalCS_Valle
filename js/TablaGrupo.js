@@ -22,8 +22,13 @@ let tableGrupos = new Grid({
       sort: true,
     },
     {
+      id: "promedioGrupo",
+      name: "Promedio Por Grupo",
+      sort: true,
+    },
+    {
       id: "acciones",
-      name: "Acciones",
+      name: "Editar",
       width: "10%",
       sort: false,
       formatter: (cell, row) => {
@@ -88,10 +93,28 @@ let tableGrupos = new Grid({
 }).render(document.getElementById("tablaGrupos"));
 
 function loadTable(grupos) {
+  const alumnosString = localStorage.getItem("alumnos");
+  const alumnos = JSON.parse(alumnosString) || [];
+  const alumnosMateriasString = localStorage.getItem("alumnoMateria");
+  const alumnoMateria = JSON.parse(alumnosMateriasString) || [];
   grupos = grupos.map((grupo) => {
+    let alumnosPorGrupo = alumnos.filter((x) => x.idGrupo == grupo.id);
+    let promedioTotal = 0;
+    alumnosPorGrupo.forEach((alumno) => {
+      let calificaciones = alumnoMateria
+        .filter((c) => c.idAlumno == alumno.id)
+        .map((c) => parseInt(c.calificacion)); //obtengo la calificacion porque es alumnoMateria tiene esa propiedad
+      let promedio =
+        calificaciones.reduce((total, numero) => total + numero, 0) /
+        calificaciones.length; //suma de mis calificaciones
+      promedioTotal += promedio; //suma de mis promedios
+    });
+    let promedioGrupo = promedioTotal / alumnosPorGrupo.length; //Esta es la operacion de mi promedio de grupos
+    console.log(promedioGrupo);
     return {
       nombre: grupo.nombre,
       acciones: grupo.id,
+      promedioGrupo: isNaN(promedioGrupo) ? 0 : promedioGrupo,
     };
   });
   tableGrupos.updateConfig({ data: grupos }).forceRender();
@@ -108,15 +131,15 @@ document.addEventListener("DOMContentLoaded", function () {
 function eliminarGrupo(id) {
   let gruposString = localStorage.getItem("grupos");
   let grupos = JSON.parse(gruposString);
+
   if (grupos.length == 1) {
     localStorage.removeItem("grupos");
     tableGrupos.updateConfig({ data: [] }).forceRender();
   } else {
     grupos = grupos.filter((grupo) => grupo.id !== id);
+    localStorage.setItem("grupos", JSON.stringify(grupos));
     loadTable(grupos);
   }
-  localStorage.setItem("grupos", JSON.stringify(grupos));
-  console.log(grupos);
 }
 
 guardarGrupo.addEventListener("click", () => {
@@ -152,6 +175,6 @@ guardarGrupo.addEventListener("click", () => {
     }
   }
   localStorage.setItem("grupos", JSON.stringify(grupos));
-  loadTable(grupos); //
+  loadTable(grupos);
   modalGuardarGrupo.hide();
 });

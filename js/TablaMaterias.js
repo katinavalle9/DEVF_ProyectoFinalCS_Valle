@@ -23,7 +23,7 @@ let tableMaterias = new Grid({
       },
       {
         id: "acciones",
-        name: "Acciones",
+        name: "Editar",
         width: "10%",
         sort: false,
         formatter: (cell, row) => {
@@ -113,10 +113,9 @@ function eliminarMateria(id) {
     tableMaterias.updateConfig({ data: [] }).forceRender();
   } else {
     materias = materias.filter((materia) => materia.id !== id);
+    localStorage.setItem("materias", JSON.stringify(materias));
     loadTable(materias);
   }
-  localStorage.setItem("materias", JSON.stringify(materias));
-  console.log(materias);
 }
 
 
